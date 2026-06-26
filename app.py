@@ -13,16 +13,18 @@ icon_url = "https://png.pngtree.com/png-vector/20190116/ourmid/pngtree-vector-sh
 st.logo(icon_url, link="http://localhost:8501")
 
 
-
 login_page = st.Page("views/login.py", title="Login", icon="🔑", default=True)
 home_page = st.Page("views/home.py", title="Pagina inicial", icon="🏠", default=False)
 profile_page = st.Page("views/profile.py", title="Perfil", icon="👤", default=False)
+create_character_page = st.Page("views/characters/new_character.py", title="Novo Personagem", default=False)
+characters_page = st.Page("views/characters/characters.py", title="Personagens", default=False)
 config_page = st.Page("views/config.py", title="Pagina de configuração", icon="⚙️", default=False)
 
 if st.session_state['logged_in']:
 
     pages = {
         "Navegação": [home_page, profile_page],
+        "Personagens": [create_character_page, characters_page],
         "Configuração": [config_page],
     }
 

@@ -1,5 +1,6 @@
 import sqlite3
 from database import get_connection
+from models.character import Character
 
 class User:
     def __init__(self, username, password, user_id=None):
@@ -35,3 +36,36 @@ class User:
         if row:
             return cls(user_id=row[0], username=row[1], password=row[2])
         return None
+    
+    def get_characters(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT * FROM characters WHERE user_id = ?', (self.id,))
+        rows = cursor.fetchall()
+        conn.close()
+
+        characters_list = []
+
+        for r in rows:
+            char = Character(
+                character_id=r[0],
+                user_id=r[1],
+                name=r[2],
+                age=r[3],
+                eye_color=r[4],
+                skin_color=r[5],
+                classe=r[6],
+                height=r[7],
+                physical=r[8],
+                race=r[9],
+                region=r[10],
+                attribute_strength=r[11],
+                attribute_agility=r[12],
+                attribute_vitality=r[13],
+                attribute_intelligence=r[14],
+                attribute_survival=r[15],
+                attribute_magic=r[16]
+            )
+            characters_list.append(char)
+        return characters_list
