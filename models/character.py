@@ -1,5 +1,6 @@
 import streamlit as st
 from database import get_connection
+from models.item import Item
 
 class Character:
     def __init__(self, user_id, name, age, eye_color, skin_color, classe, height, physical, race, region, attribute_strength, attribute_agility, attribute_vitality, attribute_intelligence,
@@ -72,3 +73,25 @@ class Character:
                 attribute_survival=row[15], attribute_magic=row[16]
             )
         return None
+    
+    def get_inventory(self):
+        return Item.get_inventory_by_character(self.id)
+    
+    def get_current_weight(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT SUM(weight * quantity) 
+            FROM inventory 
+            WHERE character_id = ?
+        ''', (self.id,))
+
+        resultado = cursor.fetchone()[0]
+        conn.close()
+        return resultado if resultado else 0.0
+    
+    @property
+    def max_capacity(self):
+        return self.attribute_strength * 2.5
+    
