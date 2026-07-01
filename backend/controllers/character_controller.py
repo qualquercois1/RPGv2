@@ -1,4 +1,3 @@
-import streamlit as st
 from models.character import Character
 from models.user import User
 

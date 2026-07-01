@@ -1,12 +1,11 @@
-import streamlit as st
 from database import get_connection
-from models.item import Item
 
 class Character:
-    def __init__(self, user_id, name, age, eye_color, skin_color, classe, height, physical, race, region, attribute_strength, attribute_agility, attribute_vitality, attribute_intelligence,
+    def __init__(self, user_id, mesa_id, name, age, eye_color, skin_color, classe, height, physical, race, region, attribute_strength, attribute_agility, attribute_vitality, attribute_intelligence,
                  attribute_survival, attribute_magic, character_id=None):
         self.id = character_id
         self.user_id = user_id
+        self.mesa_id = mesa_id
         self.name = name
         self.age = age
         self.eye_color = eye_color
@@ -30,6 +29,7 @@ class Character:
             cursor.execute('''
                            INSERT INTO characters (
                             user_id,
+                            mesa_id,
                             name,
                             age,
                             eye_color,
@@ -66,27 +66,41 @@ class Character:
         
         if row:
             return cls(
-                character_id=row[0], user_id=row[1], name=row[2], age=row[3],
-                eye_color=row[4], skin_color=row[5], classe=row[6], height=row[7],
-                physical=row[8], race=row[9], region=row[10], attribute_strength=row[11],
-                attribute_agility=row[12], attribute_vitality=row[13], attribute_intelligence=row[14],
-                attribute_survival=row[15], attribute_magic=row[16]
+                character_id=row[0], user_id=row[1], mesa_id=row[2], name=row[3], age=row[4],
+                eye_color=row[5], skin_color=row[6], classe=row[7], height=row[8],
+                physical=row[9], race=row[10], region=row[11], attribute_strength=row[12],
+                attribute_agility=row[13], attribute_vitality=row[14], attribute_intelligence=row[15],
+                attribute_survival=row[16], attribute_magic=row[17]
             )
         return None
     
-    def get_inventory(self):
-        return Item.get_inventory_by_character(self.id)
+    def get_inventory_details(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            SELECT i.id, i.quantity, i.is_equipped, 
+                   m.name, m.item_type, m.weight, m.rarity 
+            FROM inventory i
+            JOIN mesa_items m ON i.mesa_item_id = m.id
+            WHERE i.character_id = ?
+        ''', (self.id,))
+        rows = cursor.fetchall()
+        conn.close()
+        
+        return [{"inventory_id": r[0], "quantity": r[1], "is_equipped": r[2], "name": r[3], "type": r[4], "weight": r[5], "rarity": r[6]} for r in rows]
     
     def get_current_weight(self):
         conn = get_connection()
         cursor = conn.cursor()
-        
-        cursor.execute('''
-            SELECT SUM(weight * quantity) 
-            FROM inventory 
-            WHERE character_id = ?
-        ''', (self.id,))
 
+        cursor.execute('''
+            SELECT SUM(m.weight * i.quantity) 
+            FROM inventory i
+            JOIN mesa_items m ON i.mesa_item_id = m.id
+            WHERE i.character_id = ?
+        ''', (self.id,))
+        
         resultado = cursor.fetchone()[0]
         conn.close()
         return resultado if resultado else 0.0

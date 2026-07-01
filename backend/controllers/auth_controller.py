@@ -1,4 +1,3 @@
-import streamlit as st
 import bcrypt
 from models.user import User
 from database import create_tables
@@ -17,14 +16,6 @@ def login(username, password):
 
     if user:
         if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-            st.session_state['logged_in'] = True
-            st.session_state['username'] = user.username
-            st.session_state['user_id'] = user.id
+            return {"id": user.id, "username": user.username}
+    return None
 
-            return True
-    return False
-
-def logout():
-    st.session_state['logged_in'] = False
-    st.session_state['username'] = None
-    st.session_state['user_id'] = None

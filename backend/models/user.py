@@ -69,3 +69,18 @@ class User:
             )
             characters_list.append(char)
         return characters_list
+    
+
+    def get_mesas(self):
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT m.id, m.name, m.description, um.is_mestre
+            FROM mesas m
+            JOIN user_mesas um ON m.id = um.mesa_id
+            WHERE um.user_id = ?
+        ''', (self.id,))
+        rows = cursor.fetchall()
+        conn.close()
+        
+        return [{"id": r[0], "name": r[1], "description": r[2], "is_mestre": bool(r[3])} for r in rows]
